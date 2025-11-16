@@ -1,0 +1,60 @@
+{
+  "products": [
+    {
+      "id": 1,
+      "name": "Classic White Tee",
+      "price": 25.00,
+      "description": "A comfortable and stylish white t-shirt for everyday wear.",
+      "image": "/images/white-tshirt.jpg",
+      "category": "tops"
+    },
+    {
+      "id": 2,
+      "name": "Vintage Denim Jeans",
+      "price": 65.00,
+      "description": "Classic denim jeans with a vintage wash.",
+      "image": "/images/jeans.jpg",
+      "category": "bottoms"
+    },
+    {
+      "id": 3,
+      "name": "Black Hoodie",
+      "price": 45.00,
+      "description": "A warm and cozy black hoodie for the colder months.",
+      "image": "/images/black-hoodie.jpg",
+      "category": "tops"
+    },
+    {
+      "id": 4,
+      "name": "Striped Sweater",
+      "price": 55.00,
+      "description": "A stylish striped sweater for a casual yet put-together look.",
+      "image": "/images/striped-sweater.jpg",
+      "category": "tops"
+    },
+    {
+      "id": 5,
+      "name": "Casual Shorts",
+      "price": 35.00,
+      "description": "Comfortable shorts perfect for warm weather.",
+      "image": "/images/shorts.jpg",
+      "category": "bottoms"
+    },
+    {
+      "id": 6,
+      "name": "Summer Dress",
+      "price": 75.00,
+      "description": "A beautiful floral dress for summer occasions.",
+      "image": "/images/dress.jpg",
+      "category": "dresses"
+    },
+    {
+      "id": 7,
+      "name": "GaaN",
+      "price": 759.00,
+      "description": "A beautiful occasion.",
+      "image": "/images/dress.jpg",
+      "category": "novelty"
+    }
+  ]
+}

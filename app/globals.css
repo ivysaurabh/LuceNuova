@@ -120,3 +120,57 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Enhanced smooth theme transitions */
+.theme-transition,
+.theme-transition *,
+.theme-transition *::before,
+.theme-transition *::after {
+  transition: 
+    background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    fill 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Ensure smooth scrolling and transitions */
+html {
+  scroll-behavior: smooth;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+body {
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Specific component transitions */
+.bg-card,
+.bg-background,
+.bg-primary,
+.bg-secondary,
+.bg-muted,
+.bg-accent {
+  transition: background-color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.text-foreground,
+.text-muted-foreground,
+.text-card-foreground,
+.text-primary-foreground {
+  transition: color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.border,
+.border-border {
+  transition: border-color 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+/* Shadow transitions */
+.shadow-sm,
+.shadow-md,
+.shadow-lg {
+  transition: box-shadow 0.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}

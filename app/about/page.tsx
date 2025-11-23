@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useEffect, useState } from "react";
 import Link from 'next/link';
 import { motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Users, Target, Award, Globe, ArrowRight, Heart } from "lucide-react";
 
 
@@ -58,6 +59,24 @@ export default function AboutUsPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
+      {/* Nav Section */}
+      <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
+        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+          <Link href="/" className="text-2xl font-bold text-gray-900 dark:text-white">Luce Nuova
+          </Link>
+    
+          <nav className="flex items-center space-x-6">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Products
+            </Link>
+            <Link href="/about" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">About Us
+            </Link>
+            <div className="flex items-center space-x-4">
+              <ThemeToggle />
+            </div>
+          </nav>
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden">
         <div className="absolute inset-0 bg-black/5"></div>

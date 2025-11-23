@@ -3,28 +3,29 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Minus, Plus, ShoppingCart, X } from "lucide-react";
 import Link from 'next/link';
 
 // Color System - Change these to update the entire theme
 const colors = {
   primary: {
-    background: "bg-gray-50",
-    foreground: "text-gray-900",
-    card: "bg-white",
-    cardForeground: "text-white",
-    button: "bg-blue-600 hover:bg-blue-700",
-    buttonForeground: "text-white",
+    background: "bg-background",
+    foreground: "text-foreground",
+    card: "bg-card",
+    cardForeground: "text-card-foreground",
+    button: "bg-primary text-primary-foreground hover:bg-primary/90",
+    buttonForeground: "text-primary-foreground",
   },
   secondary: {
-    background: "bg-red-100",
-    foreground: "text-gray-700",
-    muted: "text-gray-500",
-    border: "border-gray-200",
+    background: "bg-muted",
+    foreground: "text-muted-foreground",
+    muted: "text-muted-foreground",
+    border: "border-border",
   },
   accent: {
-    destructive: "bg-red-500",
-    destructiveForeground: "text-white",
+    destructive: "bg-destructive",
+    destructiveForeground: "text-destructive-foreground",
   },
   ui: {
     shadow: "shadow-sm",
@@ -143,6 +144,7 @@ export default function EcommerceSkeleton() {
             <Link href="/about" className="text-gray-700 hover:text-gray-900">About Us
             </Link>
           <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="icon"

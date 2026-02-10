@@ -4,7 +4,7 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
+  --color-background: oklch(1 0 0);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -138,8 +138,9 @@
 
 /* Ensure smooth scrolling and transitions */
 html {
+  scrollbar-gutter: flex;
   scroll-behavior: smooth;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition: background-color 0.9s ease, color 0.5s ease;
 }
 
 body {

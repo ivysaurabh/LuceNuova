@@ -3,29 +3,30 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Minus, Plus, ShoppingCart, X } from "lucide-react";
+import { Minus, Plus, ShoppingCart, X, Shirt, Crown, Scissors, ShirtIcon as Casual, Sparkles } from "lucide-react";
 import Link from 'next/link';
+import Image from 'next/image';
+
 
 // Color System - Change these to update the entire theme
 const colors = {
   primary: {
-    background: "bg-background",
-    foreground: "text-foreground",
-    card: "bg-card",
-    cardForeground: "text-card-foreground",
-    button: "bg-primary text-primary-foreground hover:bg-primary/90",
-    buttonForeground: "text-primary-foreground",
+    background: "bg-gray-50",
+    foreground: "text-gray-900",
+    card: "bg-white",
+    cardForeground: "text-white",
+    button: "bg-blue-600 hover:bg-blue-700",
+    buttonForeground: "text-white",
   },
   secondary: {
-    background: "bg-muted",
-    foreground: "text-muted-foreground",
-    muted: "text-muted-foreground",
-    border: "border-border",
+    background: "bg-red-100",
+    foreground: "text-gray-700",
+    muted: "text-gray-500",
+    border: "border-gray-200",
   },
   accent: {
-    destructive: "bg-destructive",
-    destructiveForeground: "text-destructive-foreground",
+    destructive: "bg-red-500",
+    destructiveForeground: "text-white",
   },
   ui: {
     shadow: "shadow-sm",
@@ -48,6 +49,14 @@ type CartItem = {
   quantity: number;
 };
 
+const categories = [
+  { id: 'all', name: 'All Products' },
+  { id: 'designer', name: 'Designer' },
+  { id: 'ethnic', name: 'Ethnic' },
+  { id: 'casual', name: 'Casual' },
+  { id: 'accessories', name: 'Accessories' },
+];
+
 export default function EcommerceSkeleton() {
   // State management
   const [products, setProducts] = useState<Product[]>([]);
@@ -57,6 +66,13 @@ export default function EcommerceSkeleton() {
   const [loading, setLoading] = useState(true);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('all');
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [currentInfoSlide, setCurrentInfoSlide] = useState(0);
 
   // Load products from JSON file
   useEffect(() => {
@@ -76,6 +92,74 @@ export default function EcommerceSkeleton() {
 
     loadProducts();
   }, []);
+
+  //make nav bar hide on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Only hide the navigation bar (not the logo header)
+      if (currentScrollY < lastScrollY) {
+        setIsNavVisible(true); // Scrolling UP - show nav
+      } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsNavVisible(false); // Scrolling DOWN past 50px - hide nav
+      }
+      
+      // Always show nav at the very top
+      if (currentScrollY < 10) {
+        setIsNavVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
+  // Announcement slides
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % 3); // 3 slides total
+    }, 5000); // Change slide every 5 seconds
+  
+    return () => clearInterval(interval);
+  }, []);
+
+  // Auto-advance info carousel effect
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentInfoSlide((prev) => (prev + 1) % 4); // 4 slides total
+  }, 6000); // Change slide every 6 seconds
+  
+  return () => clearInterval(interval);
+}, []);
+
+  // Touch swipe handlers for carousel
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 50) {
+      // Swipe left - next slide
+      setCurrentSlide((prev) => (prev + 1) % 3);
+    }
+    
+    if (touchStart - touchEnd < -50) {
+      // Swipe right - previous slide
+      setCurrentSlide((prev) => (prev - 1 + 3) % 3);
+    }
+  };
+
+  // Filter products based on active category
+  const filteredProducts = activeCategory === 'all' 
+  ? products 
+  : products.filter(product => product.category.toLowerCase() === activeCategory);
 
   // Cart functions
   const addToCart = (product: Product) => {
@@ -114,7 +198,7 @@ export default function EcommerceSkeleton() {
   };
 
   const processPayment = () => {
-    // For now, we'll just show an alert
+    // For now, its just show an alert
     // Later we can integrate with Razorpay, Stripe, etc.
     alert(`Payment of ₹${currentProduct?.price.toFixed(2)} for ${currentProduct?.name} processed successfully!`);
     setPaymentModalOpen(false);
@@ -132,19 +216,46 @@ export default function EcommerceSkeleton() {
   const cartItemCount = cart.reduce((count, item) => count + item.quantity, 0);
 
   return (
-    <div className={`min-h-screen ${colors.primary.background}`}>
-      {/* Header */}
-      <header className={`sticky top-0 z-10 ${colors.primary.card} ${colors.ui.shadow}`}>
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className={`text-2xl font-bold ${colors.primary.foreground}`}>Luce Nuova</h1>
+  <div className="min-h-screen">
+    {/* Fixed Logo Header */}
+    <header className={`fixed top-0 left-0 right-0 z-50 ${colors.primary.card} ${colors.ui.shadow} transition-all duration-300`}>
+      <div className="container mx-auto px-4 flex items-center justify-center h-16">
+        <Link href="/" className="flex items-center h-full py-2">
+          <Image 
+            src="/images/lucenuova_logo.png"
+            alt="Luce Nuova"
+            width={170}
+            height={55}
+            className="h-auto w-auto object-contain justify-start"
+            priority={true}
+          />
+        </Link>
+      </div>
+    </header>
+    
+    <nav 
+      className={`sticky top-16 z-40 ${colors.primary.card} ${colors.ui.shadow} border-t transition-transform duration-300 ${
+        isNavVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        marginTop: 'calc(env(safe-area-inset-top, 0px) * -1)'
+      }}
+    >
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          {/* Left side - Navigation Links */}
+          <div className="flex items-center space-x-6">
+            <Link href="/" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium">
+              Products
+            </Link>
+            <Link href="/about" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white font-medium">
+              About Us
+            </Link>
+          </div>
           
-          <nav className="flex items-center space-x-6">
-            <Link href="/" className="text-gray-700 hover:text-gray-900">Products
-            </Link>
-            <Link href="/about" className="text-gray-700 hover:text-gray-900">About Us
-            </Link>
+          {/* Right side - Cart & Theme Toggle */}
           <div className="flex items-center space-x-4">
-            <ThemeToggle />
             <Button 
               variant="ghost" 
               size="icon"
@@ -159,11 +270,11 @@ export default function EcommerceSkeleton() {
               )}
             </Button>
           </div>
-          </nav>
         </div>
-      </header>
+      </div>
+    </nav>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 mt-28">
         {selectedProduct ? (
           // Product Detail View
           <div className="max-w-4xl mx-auto">
@@ -217,6 +328,206 @@ export default function EcommerceSkeleton() {
         ) : (
           // Product Listing View with loading state
           <>
+            {/* Hero Carousel Section */}
+            <div className="mb-12">
+              <div 
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 to-blue-50"
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+              >
+                
+                {/* Slides Container */}
+                <div className={`relative h-[400px] md:h-[500px] flex slide-${currentSlide}`}>
+                  {/* Slide 1 */}
+                  <div 
+                    className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 md:p-12 transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateX(${currentSlide === 0 ? 0 : currentSlide === 1 ? -100 : -200}%)` }}
+                  >
+                    <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+                      <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">New Collection</h2>
+                      <p className="text-lg text-gray-600 mb-6">Discover our latest designer pieces, crafted for the modern wardrobe.</p>
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        Shop Now
+                      </Button>
+                    </div>
+                    <div className="md:w-1/2 flex justify-center">
+                      <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-blue-200 to-purple-200 flex items-center justify-center">
+                        {/* Placeholder for slide image */}
+                        <span className="text-gray-500">Slide Image 1</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Slide 2 */}
+                  <div 
+                    className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 md:p-12 transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateX(${currentSlide === 0 ? 100 : currentSlide === 1 ? 0 : -100}%)` }}
+                  >
+                    <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+                      <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Ethnic Elegance</h2>
+                      <p className="text-lg text-gray-600 mb-6">Traditional craftsmanship meets contemporary design.</p>
+                      <Button className="bg-amber-600 hover:bg-amber-700">
+                        Explore
+                      </Button>
+                    </div>
+                    <div className="md:w-1/2 flex justify-center">
+                      <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-amber-200 to-red-200 flex items-center justify-center">
+                        <span className="text-gray-500">Slide Image 2</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Slide 3 */}
+                  <div 
+                    className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 md:p-12 transition-transform duration-500 ease-in-out"
+                    style={{ transform: `translateX(${currentSlide === 0 ? 200 : currentSlide === 1 ? 100 : 0}%)` }}
+                  >
+                    <div className="md:w-1/2 text-center md:text-left mb-8 md:mb-0">
+                      <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">Casual Comfort</h2>
+                      <p className="text-lg text-gray-600 mb-6">Everyday essentials that don't compromise on style.</p>
+                      <Button className="bg-green-600 hover:bg-green-700">
+                        Browse
+                      </Button>
+                    </div>
+                    <div className="md:w-1/2 flex justify-center">
+                      <div className="w-64 h-64 md:w-80 md:h-80 rounded-full bg-gradient-to-r from-green-200 to-teal-200 flex items-center justify-center">
+                        <span className="text-gray-500">Slide Image 3</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Navigation Bullets (Dots) */}
+                <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-10">
+                  {[0, 1, 2].map((index) => (
+                    <button
+                      key={index}
+                      className={`w-3 h-3 rounded-full transition-all ${currentSlide === index ? 'bg-blue-600 w-8' : 'bg-gray-300 hover:bg-gray-400'}`}
+                      onClick={() => setCurrentSlide(index)}
+                      aria-label={`Go to slide ${index + 1}`}
+                    />
+                  ))}
+                </div>
+                
+                {/* Navigation Arrows */}
+                <button
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg z-10"
+                  onClick={() => setCurrentSlide((prev) => (prev - 1 + 3) % 3)}
+                >
+                  ←
+                </button>
+                <button
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg z-10"
+                  onClick={() => setCurrentSlide((prev) => (prev + 1) % 3)}
+                >
+                  →
+                </button>
+              </div>
+            </div>
+
+            {/* Category Filter Section */}
+            <div className="mb-12">
+              <h3 className={`text-center text-xl font-semibold ${colors.primary.foreground} mb-6`}>Browse by Category</h3>
+              
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
+                {/* All Products */}
+                <button
+                  onClick={() => setActiveCategory('all')}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border-2 ${
+                    activeCategory === 'all' 
+                      ? 'bg-blue-50 border-blue-400 shadow-lg scale-105' 
+                      : 'bg-white border-gray-200 hover:border-blue-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                    activeCategory === 'all' ? 'bg-blue-100' : 'bg-gray-100'
+                  }`}>
+                    <Shirt className={`w-7 h-7 ${activeCategory === 'all' ? 'text-blue-600' : 'text-gray-500'}`} />
+                  </div>
+                  <span className={`font-medium ${activeCategory === 'all' ? 'text-blue-700' : 'text-gray-700'}`}>
+                    All Products
+                  </span>
+                </button>
+                
+                {/* Designer */}
+                <button
+                  onClick={() => setActiveCategory('designer')}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border-2 ${
+                    activeCategory === 'designer' 
+                      ? 'bg-purple-50 border-purple-400 shadow-lg scale-105' 
+                      : 'bg-white border-gray-200 hover:border-purple-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                    activeCategory === 'designer' ? 'bg-purple-100' : 'bg-gray-100'
+                  }`}>
+                    <Scissors className={`w-7 h-7 ${activeCategory === 'designer' ? 'text-purple-600' : 'text-gray-500'}`} />
+                  </div>
+                  <span className={`font-medium ${activeCategory === 'designer' ? 'text-purple-700' : 'text-gray-700'}`}>
+                    Designer
+                  </span>
+                </button>
+                
+                {/* Ethnic */}
+                <button
+                  onClick={() => setActiveCategory('ethnic')}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border-2 ${
+                    activeCategory === 'ethnic' 
+                      ? 'bg-amber-50 border-amber-400 shadow-lg scale-105' 
+                      : 'bg-white border-gray-200 hover:border-amber-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                    activeCategory === 'ethnic' ? 'bg-amber-100' : 'bg-gray-100'
+                  }`}>
+                    <Crown className={`w-7 h-7 ${activeCategory === 'ethnic' ? 'text-amber-600' : 'text-gray-500'}`} />
+                  </div>
+                  <span className={`font-medium ${activeCategory === 'ethnic' ? 'text-amber-700' : 'text-gray-700'}`}>
+                    Ethnic
+                  </span>
+                </button>
+                
+                {/* Casual */}
+                <button
+                  onClick={() => setActiveCategory('casual')}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border-2 ${
+                    activeCategory === 'casual' 
+                      ? 'bg-green-50 border-green-400 shadow-lg scale-105' 
+                      : 'bg-white border-gray-200 hover:border-green-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                    activeCategory === 'casual' ? 'bg-green-100' : 'bg-gray-100'
+                  }`}>
+                    <Casual className={`w-7 h-7 ${activeCategory === 'casual' ? 'text-green-600' : 'text-gray-500'}`} />
+                  </div>
+                  <span className={`font-medium ${activeCategory === 'casual' ? 'text-green-700' : 'text-gray-700'}`}>
+                    Casual
+                  </span>
+                </button>
+                
+                {/* Accessories */}
+                <button
+                  onClick={() => setActiveCategory('accessories')}
+                  className={`flex flex-col items-center justify-center p-6 rounded-2xl transition-all duration-300 border-2 ${
+                    activeCategory === 'accessories' 
+                      ? 'bg-pink-50 border-pink-400 shadow-lg scale-105' 
+                      : 'bg-white border-gray-200 hover:border-pink-300 hover:shadow-md'
+                  }`}
+                >
+                  <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-3 ${
+                    activeCategory === 'accessories' ? 'bg-pink-100' : 'bg-gray-100'
+                  }`}>
+                    <Sparkles className={`w-7 h-7 ${activeCategory === 'accessories' ? 'text-pink-600' : 'text-gray-500'}`} />
+                  </div>
+                  <span className={`font-medium ${activeCategory === 'accessories' ? 'text-pink-700' : 'text-gray-700'}`}>
+                    Accessories
+                  </span>
+                </button>
+              </div>
+            </div>
+
             <div className="mb-8 text-center">
               <h2 className={`text-3xl font-bold ${colors.primary.foreground} mb-2`}>Our Products</h2>
               <p className={colors.secondary.foreground}>Discover our collection of quality products</p>
@@ -238,7 +549,8 @@ export default function EcommerceSkeleton() {
                     className={`flex flex-col ${colors.ui.hover} transition-shadow cursor-pointer group`}
                     onClick={() => setSelectedProduct(product)}
                   >
-                    {/* Square image container for larger screens */}
+                    
+                    {/*container for larger screens*/}
                     <div className={`relative pt-[100%] ${colors.secondary.background} md:pt-0 md:h-64`}>
                       <div className="absolute inset-0 flex items-center justify-center p-4 md:p-0">
                         <div className={`${colors.secondary.background} border-2 border-dashed rounded-xl w-full h-full flex items-center justify-center overflow-hidden`}>
@@ -292,6 +604,152 @@ export default function EcommerceSkeleton() {
             )}
           </>
         )}
+        {/* Info Carousel Section */}
+        <div className="mt-16 mb-8">
+          <h3 className={`text-center text-2xl font-bold ${colors.primary.foreground} mb-10`}>Why Choose Luce Nuova</h3>
+          
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-50 to-gray-100 border">
+            {/* Slides Container */}
+            <div className="relative h-[300px] md:h-[350px] flex overflow-hidden">
+              {/* Slide 1: Delivery */}
+              <div 
+                className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(${currentInfoSlide === 0 ? 0 : currentInfoSlide === 1 ? -100 : currentInfoSlide === 2 ? -200 : -300}%)` }}
+              >
+                <div className="md:w-1/3 flex justify-center mb-6 md:mb-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-r from-blue-100 to-cyan-100 flex items-center justify-center">
+                    {/* Package icon - replace with actual image if desired */}
+                    <span className="text-4xl">📦</span>
+                  </div>
+                </div>
+                <div className="md:w-2/3 text-center md:text-left md:pl-12">
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Delivery All Around India</h4>
+                  <p className="text-lg text-gray-600">Fast, reliable shipping to every corner of the country. Free delivery on orders over ₹2000.</p>
+                  <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+                    <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm">Metro Cities: 2-3 Days</span>
+                    <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">Tier 2/3: 4-5 Days</span>
+                    <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm">Remote Areas: 5-7 Days</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Slide 2: Authenticity */}
+              <div 
+                className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(${currentInfoSlide === 0 ? 100 : currentInfoSlide === 1 ? 0 : currentInfoSlide === 2 ? -100 : -200}%)` }}
+              >
+                <div className="md:w-1/3 flex justify-center mb-6 md:mb-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-r from-amber-100 to-orange-100 flex items-center justify-center">
+                    {/* Authenticity icon */}
+                    <span className="text-4xl">🏷️</span>
+                  </div>
+                </div>
+                <div className="md:w-2/3 text-center md:text-left md:pl-12">
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Authentic & Made in India</h4>
+                  <p className="text-lg text-gray-600">Proudly supporting local artisans and manufacturers. Every piece is 100% authentic with certified origins.</p>
+                  <div className="mt-4">
+                    <div className="inline-flex items-center space-x-2 px-4 py-2 bg-amber-50 rounded-lg">
+                      <span className="text-xl">🇮🇳</span>
+                      <span className="font-medium">Supporting Local Artisans</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Slide 3: Customer Satisfaction */}
+              <div 
+                className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(${currentInfoSlide === 0 ? 200 : currentInfoSlide === 1 ? 100 : currentInfoSlide === 2 ? 0 : -100}%)` }}
+              >
+                <div className="md:w-1/3 flex justify-center mb-6 md:mb-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-r from-green-100 to-emerald-100 flex items-center justify-center">
+                    {/* Satisfaction icon */}
+                    <span className="text-4xl">⭐</span>
+                  </div>
+                </div>
+                <div className="md:w-2/3 text-center md:text-left md:pl-12">
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Thousands of Satisfied Customers</h4>
+                  <p className="text-lg text-gray-600">Join our community of happy shoppers with 4.8/5 average rating from 10,000+ reviews.</p>
+                  <div className="mt-4 flex items-center justify-center md:justify-start space-x-4">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900">10K+</div>
+                      <div className="text-gray-600">Happy Customers</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900">4.8</div>
+                      <div className="text-gray-600">Avg. Rating</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-gray-900">98%</div>
+                      <div className="text-gray-600">Recommend Us</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Slide 4: Payment Methods */}
+              <div 
+                className="absolute inset-0 w-full flex-shrink-0 flex flex-col md:flex-row items-center justify-center p-8 transition-transform duration-500 ease-in-out"
+                style={{ transform: `translateX(${currentInfoSlide === 0 ? 300 : currentInfoSlide === 1 ? 200 : currentInfoSlide === 2 ? 100 : 0}%)` }}
+              >
+                <div className="md:w-1/3 flex justify-center mb-6 md:mb-0">
+                  <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-r from-indigo-100 to-violet-100 flex items-center justify-center">
+                    {/* Payment icon */}
+                    <span className="text-4xl">💳</span>
+                  </div>
+                </div>
+                <div className="md:w-2/3 text-center md:text-left md:pl-12">
+                  <h4 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">Secure & Flexible Payments</h4>
+                  <p className="text-lg text-gray-600">Multiple payment options for your convenience, all secured with bank-level encryption.</p>
+                  <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl mb-2">💳</div>
+                      <div className="font-medium">Credit Cards</div>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl mb-2">🏦</div>
+                      <div className="font-medium">Debit Cards</div>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl mb-2">📱</div>
+                      <div className="font-medium">UPI</div>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-white rounded-lg shadow-sm">
+                      <div className="text-2xl mb-2">🌐</div>
+                      <div className="font-medium">Net Banking</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Navigation Bullets */}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex space-x-3 z-10">
+              {[0, 1, 2, 3].map((index) => (
+                <button
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all duration-300 ${currentInfoSlide === index ? 'bg-blue-600 w-8' : 'bg-gray-300 hover:bg-gray-400'}`}
+                  onClick={() => setCurrentInfoSlide(index)}
+                  aria-label={`Go to info slide ${index + 1}`}
+                />
+              ))}
+            </div>
+            
+            {/* Navigation Arrows */}
+            <button
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg z-10"
+              onClick={() => setCurrentInfoSlide((prev) => (prev - 1 + 4) % 4)}
+            >
+              ←
+            </button>
+            <button
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow-lg z-10"
+              onClick={() => setCurrentInfoSlide((prev) => (prev + 1) % 4)}
+            >
+              →
+            </button>
+          </div>
+        </div>
       </main>
 
       {/* Shopping Cart Sidebar */}
@@ -551,6 +1009,122 @@ export default function EcommerceSkeleton() {
           </div>
         </div>
       )}
+
+      <footer className={`mt-20 ${colors.primary.card} border-t ${colors.secondary.border}`}>
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Brand Column */}
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <Image 
+                  src="/images/lucenuova_logo.png"
+                  alt="Luce Nuova"
+                  width={140}
+                  height={45}
+                  className="h-auto w-auto"
+                />
+              </div>
+              <p className={`${colors.secondary.foreground} text-sm max-w-xs`}>
+                Bringing authentic Indian craftsmanship to your wardrobe. Quality, tradition, and style in every stitch.
+              </p>
+            </div>
+            
+            {/* Links Column 1 */}
+            <div>
+              <h4 className={`font-bold ${colors.primary.foreground} mb-4 text-lg`}>Information</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/about" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    About Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/terms" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Terms and Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/shipping" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Shipping Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/privacy" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Privacy Policy
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/returns" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Return & Exchange
+                  </Link>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Links Column 2 */}
+            <div>
+              <h4 className={`font-bold ${colors.primary.foreground} mb-4 text-lg`}>Support</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/contact" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Contact Us
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/faq" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    FAQ
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/track" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Track Your Order
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/authenticity" className={`${colors.secondary.foreground} hover:${colors.primary.foreground} transition-colors`}>
+                    Authenticity
+                  </Link>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          {/* Bottom Bar */}
+          <div className={`mt-12 pt-8 border-t ${colors.secondary.border}`}>
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className={`${colors.secondary.muted} text-sm`}>
+                © {new Date().getFullYear()} Luce Nuova. All rights reserved.
+              </p>
+              <div className="flex space-x-6 mt-4 md:mt-0">
+                {/* Social Media Icons (Placeholder) */}
+                <a href="#" className={`${colors.secondary.muted} hover:${colors.primary.foreground} transition-colors`}>
+                  <span className="text-lg">📱</span>
+                </a>
+                <a href="#" className={`${colors.secondary.muted} hover:${colors.primary.foreground} transition-colors`}>
+                  <span className="text-lg">📧</span>
+                </a>
+                <a href="#" className={`${colors.secondary.muted} hover:${colors.primary.foreground} transition-colors`}>
+                  <span className="text-lg">📘</span>
+                </a>
+                <a href="#" className={`${colors.secondary.muted} hover:${colors.primary.foreground} transition-colors`}>
+                  <span className="text-lg">📷</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
+
+/*tweaked code for adding images instead of icons in the information carousel
+<Image 
+  src="/images/delivery-partner.png" 
+  alt="Delivery Partner" 
+  width={48} 
+  height={48}
+  className="w-12 h-12"
+/>
+*/

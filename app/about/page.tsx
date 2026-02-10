@@ -2,11 +2,12 @@
 
 import { useRef, useEffect, useState } from "react";
 import Link from 'next/link';
+import Image from 'next/image';
 import { motion, useInView } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Users, Target, Award, Globe, ArrowRight, Heart } from "lucide-react";
+
 
 
 // Animation variants
@@ -23,7 +24,57 @@ const staggerContainer = {
   },
 };
 
+const colors = {
+  primary: {
+    background: "bg-gray-50",
+    foreground: "text-gray-900",
+    card: "bg-white",
+    cardForeground: "text-white",
+    button: "bg-blue-600 hover:bg-blue-700",
+    buttonForeground: "text-white",
+  },
+  secondary: {
+    background: "bg-red-100",
+    foreground: "text-gray-700",
+    muted: "text-gray-500",
+    border: "border-gray-200",
+  },
+  accent: {
+    destructive: "bg-red-500",
+    destructiveForeground: "text-white",
+  },
+  ui: {
+    shadow: "shadow-sm",
+    hover: "hover:shadow-lg",
+  }
+};
+
 export default function AboutUsPage() {
+
+  const [isNavVisible, setIsNavVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY < lastScrollY) {
+        setIsNavVisible(true);
+      } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setIsNavVisible(false);
+      }
+      
+      if (currentScrollY < 10) {
+        setIsNavVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+    
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+  
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, amount: 0.3 });
 
@@ -58,27 +109,48 @@ export default function AboutUsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
-      {/* Nav Section */}
-      <header className="sticky top-0 z-50 bg-white dark:bg-gray-900 shadow-sm">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="text-2xl font-bold text-gray-900 dark:text-white">Luce Nuova
+    <div className="min-h-screen">
+      <header className={`fixed top-0 left-0 right-0 z-50 ${colors.primary.card} transition-all duration-300`}>
+        <div className="container mx-auto px-4 flex items-center justify-center h-16">
+          <Link href="/" className="flex items-center h-full py-2">
+            <Image 
+              src="/images/lucenuova_logo.png"
+              alt="Luce Nuova"
+              width={170}
+              height={55}
+              className="h-auto w-auto object-contain justify-start"
+              priority={true}
+            />
           </Link>
-    
-          <nav className="flex items-center space-x-6">
-            <Link href="/" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">Products
-            </Link>
-            <Link href="/about" className="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white">About Us
-            </Link>
-            <div className="flex items-center space-x-4">
-              <ThemeToggle />
-            </div>
-          </nav>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden">
+      <nav
+        className={`sticky top-16 z-40 ${colors.primary.card} ${colors.ui.shadow} border-t transition-transform duration-300 ${
+        isNavVisible ? 'translate-y-0' : '-translate-y-full'
+        }`}
+        style={{
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          marginTop: 'calc(env(safe-area-inset-top, 0px) * -1)'
+        }}
+      >
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
+              <Link href="/" className="text-gray-700 hover:text-gray-900 font-medium">
+                Products
+              </Link>
+              <Link href="/about" className="text-gray-700 hover:text-gray-900 font-medium">
+                About Us
+              </Link>
+            </div>
+            {/* Empty div to balance layout (matching main page structure) */}
+            <div className="w-10"></div>
+          </div>
+        </div>
+      </nav>
+
+      <section className="relative py-20 overflow-hidden mt-28">
         <div className="absolute inset-0 bg-black/5"></div>
         <div className="relative container mx-auto px-4 text-center">
           <motion.div

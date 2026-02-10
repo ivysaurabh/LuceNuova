@@ -21,11 +21,27 @@
       "name": "Black Hoodie",
       "price": 45.00,
       "description": "A warm and cozy black hoodie for the colder months.",
-      "image": "/images/black-hoodie.jpg",
+      "image": "/images/hoodie.jpg",
       "category": "tops"
     },
     {
-      "id": 4,
+      "id": 10,
+      "name": "Striped Sweater",
+      "price": 55.00,
+      "description": "A stylish striped sweater for a casual yet put-together look.",
+      "image": "/images/striped-sweater.jpg",
+      "category": "tops"
+    },
+    {
+      "id": 9,
+      "name": "Striped Sweater",
+      "price": 55.00,
+      "description": "A stylish striped sweater for a casual yet put-together look.",
+      "image": "/images/striped-sweater.jpg",
+      "category": "tops"
+    },
+    {
+      "id": 8,
       "name": "Striped Sweater",
       "price": 55.00,
       "description": "A stylish striped sweater for a casual yet put-together look.",
@@ -50,7 +66,7 @@
     },
     {
       "id": 7,
-      "name": "GaaN",
+      "name": "Bonnet",
       "price": 759.00,
       "description": "A beautiful occasion.",
       "image": "/images/dress.jpg",
